@@ -1,0 +1,79 @@
+- name: "Create infrastructure"
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    tmp_maszyny: []
+  vars_files:
+  - vars.yaml
+  tasks:
+
+  - name: Create temporary directory
+    ansible.builtin.file:
+      path: '{{ tmp_dir }}'
+      state: directory
+      mode: '0755'
+
+  # Generowanie MAC adresów
+  - ansible.builtin.set_fact:
+      tmp_maszyny: "{{ maszyny }}"
+      maszyny: []
+  - ansible.builtin.set_fact:
+      maszyny: "{{ maszyny + [{'name': item.name, 'mac_addr': ('52:54:00' | community.general.random_mac), 'ip_addr': item.ip_addr, 'memory': item.memory}]}}"
+    with_items: "{{ tmp_maszyny }}"
+
+  - name: Define a new network
+    community.libvirt.virt_net:
+      command: define
+      name: '{{ network_name }}'
+      xml: '{{ lookup("template", "infra_install/network.xml.j2") }}'
+
+  - community.libvirt.virt_net:
+      command: create
+      name: '{{ network_name }}'
+
+  # rezerwacje na DHCP sieci
+  - name: Add a new host in the dhcp pool
+    community.libvirt.virt_net:
+      name: '{{ network_name }}'
+      command: modify
+      xml: "<host mac='{{ item.mac_addr }}' name='{{ item.name }}' ip='{{ item.ip_addr }}'/>"
+    with_items: "{{ maszyny }}"
+
+  # Dyski
+  - ansible.builtin.shell: 'virsh --connect=qemu:///system vol-list default'
+    register: 'disk_list'
+  - ansible.builtin.debug:
+      msg: "{{ disk_list }}"
+
+  - name: Budowanie XMLi dla dysków
+    ansible.builtin.template:
+      src: infra_install/volume.xml.j2
+      dest: '{{ tmp_dir }}/vol-{{ item.name }}.xml'
+    with_items: "{{ maszyny }}"
+
+  - name: Tworzenie dysku
+    ansible.builtin.shell: 'virsh --connect=qemu:///system vol-create default {{ tmp_dir }}/vol-{{ item.name }}.xml'
+    with_items: "{{ maszyny }}"
+    when: disk_list.stdout is not regex("\n %s" % item.name)
+
+  # VMki
+  - name: Define a VM
+    community.libvirt.virt:
+      command: define
+      xml: "{{ lookup('template', 'infra_install/vm_machine.xml.j2') }}"
+    with_items: "{{ maszyny }}"
+
+  - name: Start VMs
+    community.libvirt.virt:
+      command: start
+      name: '{{ item.name }}'
+    with_items: "{{ maszyny }}"
+
+  - name: Kasowanie katalogu
+    ansible.builtin.file:
+      path: '{{ tmp_dir }}'
+      state: absent
+
+
+# jejek@lambda /tmp [1]> virsh --connect=qemu:///system net-update k8s-net.lambda add ip-dhcp-host '<host mac="52:54:00:6c:3c:02" name="vm2" ip="192.168.105.12"/>'
