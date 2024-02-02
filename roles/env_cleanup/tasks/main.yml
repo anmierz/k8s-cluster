@@ -1,0 +1,7 @@
+---
+# tasks file for env_cleanup
+
+- name: Kasowanie katalogu tymczasowego
+  ansible.builtin.file:
+    path: '{{ tmp_dir }}'
+    state: absent

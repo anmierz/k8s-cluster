@@ -1,0 +1,13 @@
+---
+
+nginx:
+  hosts:
+#   k8s-nginx:
+
+kubernetes:
+  hosts:
+    k8s-archlinux-41:
+    k8s-archlinux-42:
+    # k8s-archlinux-43:
+    # k8s-archlinux-44:
+    # k8s-archlinux-45:

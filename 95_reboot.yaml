@@ -5,6 +5,7 @@
   - vars.yaml
 
   roles:
-  - env_prepare
-  - infra_create
-  - env_cleanup
+  - name: vms_restart
+    vars:
+      cdrom_eject: false
+

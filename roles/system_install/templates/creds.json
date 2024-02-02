@@ -1,0 +1,10 @@
+{
+    "!root-password": "12ispik34",
+    "!users": [
+        {
+            "!password": "12ispik34",
+            "sudo": true,
+            "username": "jejek"
+        }
+    ]
+}

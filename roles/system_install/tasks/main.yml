@@ -1,0 +1,49 @@
+---
+# tasks file for system_install
+
+- ansible.builtin.copy:
+    src: templates/archinstall-config.json.j2
+    dest: /tmp/config.json.j2
+- ansible.builtin.copy:
+    src: templates/creds.json
+    dest: /tmp/creds.json
+- ansible.builtin.template:
+    src: templates/archinstall-config.json.j2
+    dest: /tmp/config.json
+
+- name: Dodanie lokalnego repozytorium pakietów
+  ansible.builtin.lineinfile:
+    path: '/etc/pacman.d/mirrorlist'
+    insertbefore: 'Server = '
+    line: 'Server = {{ mirror_repo.url }}'
+    firstmatch: true
+  when: mirror_repo.enable
+
+# - fail:
+#     msg: 'Przerwa'
+
+- name: Ordynarne usunięcie reflectora żeby nie szukał mirrorów
+  ansible.builtin.command: pacman -Rs --noconfirm reflector
+
+- name: Instalacja
+  ansible.builtin.shell:
+    cmd: archinstall --config /tmp/config.json --creds /tmp/creds.json --silent | tee /tmp/install.log
+
+- name: Klucze SSH
+  ansible.builtin.copy:
+    src: /root/.ssh/authorized_keys
+    dest: /mnt/archinstall/root/.ssh
+    remote_src: yes
+
+
+- ansible.builtin.command: arch-chroot /mnt/archinstall systemctl enable sshd.service
+
+- name: Check SSHD state
+  ansible.builtin.command: ls -lh /mnt/archinstall/etc/systemd/system/multi-user.target.wants
+  register: aaa
+- ansible.builtin.debug: var=aaa
+
+- ansible.builtin.command: reboot
+  async: 10
+  poll: 0
+
