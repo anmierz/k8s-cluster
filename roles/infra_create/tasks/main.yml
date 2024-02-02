@@ -9,7 +9,7 @@
   community.libvirt.virt_net:
     command: define
     name: '{{ network_name }}'
-    xml: '{{ lookup("template", "infra_install/network.xml.j2") }}'
+    xml: '{{ lookup("template", "templates/network.xml.j2") }}'
 
 - name: Zatrzymanie sieci przed modyfikacją wpisów DHCP
   community.libvirt.virt_net:
@@ -47,7 +47,7 @@
 
 - name: Budowanie XMLi dla dysków
   ansible.builtin.template:
-    src: infra_install/volume.xml.j2
+    src: templates/volume.xml.j2
     dest: '{{ tmp_dir }}/vol-{{ item.name }}.xml'
   with_items: "{{ maszyny }}"
 
