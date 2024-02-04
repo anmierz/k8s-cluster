@@ -11,3 +11,5 @@ kubernetes:
     # k8s-archlinux-43:
     # k8s-archlinux-44:
     # k8s-archlinux-45:
+  vars:
+    main_node: k8s-archlinux-41
