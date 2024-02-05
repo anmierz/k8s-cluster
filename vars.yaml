@@ -1,8 +1,17 @@
 tmp_dir: /tmp/k8s-ansible
 network_name: 'k8s-net.lambda'
-network_gateway: '192.168.105.1'
+# network_gateway: '192.168.105.1'
+mirror_repo:
+  enable: true
+  url: 'http://192.168.53.40:8080/repo'
 maszyny:
-- { name: k8s-nginx, ip_addr: '192.168.105.5', memory: '2'}
-# - { name: k8s-archlinux-41, ip_addr: '192.168.105.101', memory: '2'}
-# - { name: k8s-archlinux-42, ip_addr: '192.168.105.102', memory: '4'}
-# - { name: k8s-archlinux-43, ip_addr: '192.168.105.103', memory: '4'}
+- { name: k8s-archlinux-41, ip_addr: '192.168.105.101', memory: '2'}
+- { name: k8s-archlinux-42, ip_addr: '192.168.105.102', memory: '2'}
+- { name: k8s-archlinux-43, ip_addr: '192.168.105.103', memory: '4'}
+# - { name: k8s-archlinux-44, ip_addr: '192.168.105.104', memory: '2'}
+# - { name: k8s-archlinux-45, ip_addr: '192.168.105.105', memory: '2'}
+
+purelb:
+  service_group:
+    enable: true
+    pool: '192.168.105.200-192.168.105.205'

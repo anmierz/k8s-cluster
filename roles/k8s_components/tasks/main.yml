@@ -1,0 +1,64 @@
+---
+# tasks file for k8s_components
+
+- name: Poprawka plugin_dirs dla cri-o
+  ansible.builtin.lineinfile:
+    path: '/etc/crio/crio.conf'
+    insertafter: '\[crio\.network\]'
+    line: |
+      plugin_dirs = [
+        "/opt/cni/bin/",
+      ]
+    firstmatch: true
+
+- name: Restart serwisu cri-o
+  ansible.builtin.systemd_service:
+    name: crio.service
+    state: restarted
+    daemon_reload: true
+
+- name: Pobranie pliku dostępu do klastra
+  ansible.builtin.fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: /tmp/
+    flat: yes
+  register: fetch_output
+  when: ansible_hostname == main_node
+- ansible.builtin.debug: var=fetch_output
+  when: ansible_hostname == main_node
+
+- name: Repozytorium Flannel
+  kubernetes.core.helm_repository:
+    name: flannel
+    repo_url: "https://flannel-io.github.io/flannel"
+  when: ansible_hostname == main_node
+- name: Repozytorium PureLB
+  kubernetes.core.helm_repository:
+    name: purelb
+    repo_url: "https://gitlab.com/api/v4/projects/20400619/packages/helm/stable"
+  when: ansible_hostname == main_node
+
+- name: Instaluj Flannel
+  kubernetes.core.helm:
+    release_name: flannel
+    chart_ref: flannel/flannel
+    release_namespace: kube-flannel
+    create_namespace: true
+  when: ansible_hostname == main_node
+
+- name: Instaluj PureLB
+  kubernetes.core.helm:
+    release_name: purelb
+    chart_ref: purelb/purelb
+    release_namespace: purelb
+    create_namespace: true
+    values:
+      serviceGroup:
+        name: "default"
+        create: '{{ purelb.service_group.enable }}'
+        spec:
+          local:
+            subnet: '{{ ansible_facts.default_ipv4.network }}/{{ ansible_facts.default_ipv4.prefix }}'
+            pool: '{{ purelb.service_group.pool }}'
+            aggregation: default
+  when: ansible_hostname == main_node

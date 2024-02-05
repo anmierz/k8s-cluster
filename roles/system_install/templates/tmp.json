@@ -1,0 +1,18 @@
+"mirror_config": {
+    "custom_mirrors": [
+        {
+            "name": "core",
+            "sign_check": "Never",
+            "sign_option": "TrustAll",
+            "url": "http://192.168.53.40:8080/repo"
+        }
+    ],
+    "mirror_regions": {
+        "Chile": [
+            "https://mirror.hnd.cl/archlinux/$repo/os/$arch",
+            "https://mirror.anquan.cl/archlinux/$repo/os/$arch",
+            "http://mirror.hnd.cl/archlinux/$repo/os/$arch",
+            "http://mirror.anquan.cl/archlinux/$repo/os/$arch"
+        ]
+    }
+},

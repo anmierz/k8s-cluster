@@ -1,0 +1,24 @@
+---
+# tasks file for infra_destroy
+
+- name: Zatrzymanie VM-ek
+  community.libvirt.virt:
+    command: destroy
+    name: '{{ item.name }}'
+  with_items: "{{ maszyny }}"
+
+- name: Usunięcie VM-ek
+  community.libvirt.virt:
+    command: undefine
+    name: '{{ item.name }}'
+  with_items: "{{ maszyny }}"
+
+- name: Zatrzymanie sieci
+  community.libvirt.virt_net:
+    command: destroy
+    name: '{{ network_name }}'
+
+- name: Usunięcie sieci
+  community.libvirt.virt_net:
+    command: undefine
+    name: '{{ network_name }}'

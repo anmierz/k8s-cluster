@@ -1,0 +1,28 @@
+---
+# tasks file for vms_restart
+- name: Zatrzymanie VM-ek
+  community.libvirt.virt:
+    command: shutdown
+    name: '{{ item.name }}'
+  with_items: "{{ maszyny }}"
+
+- ansible.builtin.pause:
+    seconds: 10
+
+- local_action:
+    module: ansible.builtin.command
+    argv:
+    - virsh
+    - --connect=qemu:///system
+    - change-media
+    - '{{ item.name }}'
+    - sda
+    - --eject
+  with_items: "{{ maszyny }}"
+  when: '{{ cdrom_eject }}'
+
+- name: Uruchomienie VM-ek
+  community.libvirt.virt:
+    command: start
+    name: '{{ item.name }}'
+  with_items: "{{ maszyny }}"

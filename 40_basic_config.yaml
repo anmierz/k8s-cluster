@@ -1,0 +1,10 @@
+- name: Instalacja systemu
+  gather_facts: yes
+  hosts:
+  - nginx
+  - kubernetes
+  vars_files:
+  - vars.yaml
+
+  roles:
+  - qemu_agent

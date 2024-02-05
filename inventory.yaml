@@ -1,0 +1,20 @@
+---
+
+nginx:
+  hosts:
+#   k8s-nginx:
+
+kubernetes:
+  hosts:
+    k8s-archlinux-41:
+      # ansible_python_interpreter: /usr/bin/python
+      name: k8s-archlinux-41
+      ip_addr: '192.168.105.101'
+      memory: '2'
+    k8s-archlinux-[42:43]:
+    # k8s-archlinux-43:
+    # k8s-archlinux-44:
+    # k8s-archlinux-45:
+  vars:
+    main_node: k8s-archlinux-41
+    ansible_python_interpreter: /usr/bin/python
