@@ -1,4 +1,4 @@
-- name: Instalacja oprogramowania K8S
+- name: Konfiguracja klastra K8S
   gather_facts: yes
   hosts:
   - kubernetes
@@ -6,4 +6,4 @@
   - vars.yaml
 
   roles:
-  - k8s_dependencies
+  - k8s_components

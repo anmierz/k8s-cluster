@@ -21,7 +21,13 @@
     name:
     - kubeadm
     - kubelet
+
+- name: Dodatkowo na węźle głównym
+  ansible.builtin.package:
+    name:
     - kubectl
+    - helm
+  when: ansible_hostname == main_node
 
 - ansible.builtin.systemd_service:
     name: kubelet.service

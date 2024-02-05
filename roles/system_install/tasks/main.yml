@@ -19,9 +19,6 @@
     firstmatch: true
   when: mirror_repo.enable
 
-# - fail:
-#     msg: 'Przerwa'
-
 - name: Ordynarne usunięcie reflectora żeby nie szukał mirrorów
   ansible.builtin.command: pacman -Rs --noconfirm reflector
 
@@ -35,13 +32,7 @@
     dest: /mnt/archinstall/root/.ssh
     remote_src: yes
 
-
 - ansible.builtin.command: arch-chroot /mnt/archinstall systemctl enable sshd.service
-
-- name: Check SSHD state
-  ansible.builtin.command: ls -lh /mnt/archinstall/etc/systemd/system/multi-user.target.wants
-  register: aaa
-- ansible.builtin.debug: var=aaa
 
 - ansible.builtin.command: reboot
   async: 10

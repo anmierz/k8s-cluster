@@ -3,7 +3,12 @@
 
 - name: Tworzenie klastra
   ansible.builtin.command: kubeadm init --pod-network-cidr=10.244.0.0/16
+  register: init_output
   when: ansible_hostname == main_node
+- name: TODO poszukać konfiguracji klastra
+  ansible.builtin.debug: var=init_output
+  when: ansible_hostname == main_node
+
 - name: Token do połączenia
   ansible.builtin.command: kubeadm token create --print-join-command
   register: join_string
@@ -19,9 +24,11 @@
   ansible.builtin.file:
     path: "{{ ansible_env['HOME'] }}/.kube"
     state: directory
+    mode: '0700'
   when: ansible_hostname == main_node
 - ansible.builtin.copy:
     src: /etc/kubernetes/admin.conf
     dest: "{{ ansible_env['HOME'] }}/.kube/config"
     remote_src: yes
+    mode: '0400'
   when: ansible_hostname == main_node
