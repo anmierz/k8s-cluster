@@ -1,9 +1,0 @@
-- name: Instalacja oprogramowania K8S
-  gather_facts: yes
-  hosts:
-  - kubernetes
-  vars_files:
-  - vars.yaml
-
-  roles:
-  - k8s_dependencies
