@@ -7,7 +7,7 @@ mirror_repo:
 maszyny:
 - { name: k8s-archlinux-41, ip_addr: '192.168.105.101', memory: '2'}
 - { name: k8s-archlinux-42, ip_addr: '192.168.105.102', memory: '2'}
-- { name: k8s-archlinux-43, ip_addr: '192.168.105.103', memory: '4'}
+# - { name: k8s-archlinux-43, ip_addr: '192.168.105.103', memory: '4'}
 # - { name: k8s-archlinux-44, ip_addr: '192.168.105.104', memory: '2'}
 # - { name: k8s-archlinux-45, ip_addr: '192.168.105.105', memory: '2'}
 

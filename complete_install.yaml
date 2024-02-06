@@ -1,0 +1,143 @@
+---
+- name: Tworzenie infrastruktury
+  hosts: localhost
+  connection: local
+  tags:
+  - always
+  - base_cluster
+  vars_files:
+  - vars.yaml
+
+  # TODO: tworzenie dysków bez generowania XML i odpadnie zakładanie katalogu tymczasowego
+  # TODO: parametry maszyn do inventory i iterowanie po nim. Jeszcze nie wiem jak.
+  roles:
+  - env_prepare
+  - infra_create
+  - env_cleanup
+
+- name: Oczekiwanie aż wstanie infrastruktura
+  gather_facts: no
+  any_errors_fatal: true
+  hosts:
+  - kubernetes
+  tags:
+  - always
+  - base_cluster
+  tasks:
+  - ansible.builtin.wait_for_connection:
+      delay: 10
+      timeout: 120
+
+- name: Instalacja systemu
+  gather_facts: yes
+  hosts:
+  - kubernetes
+  tags:
+  - always
+  - base_cluster
+  vars_files:
+  - vars.yaml
+
+  roles:
+  - system_install
+
+- name: Oczekiwanie na restart
+  gather_facts: no
+  any_errors_fatal: true
+  hosts:
+  - kubernetes
+  tags:
+  - always
+  - base_cluster
+  tasks:
+  - ansible.builtin.wait_for_connection:
+      delay: 10
+      timeout: 120
+
+- hosts: localhost
+  connection: local
+  tags:
+  - always
+  - base_cluster
+  vars_files:
+  - vars.yaml
+  roles:
+  - name: vms_restart
+    vars:
+      cdrom_eject: true
+
+- name: Oczekiwanie na restart
+  gather_facts: no
+  any_errors_fatal: true
+  hosts:
+  - kubernetes
+  tags:
+  - always
+  - base_cluster
+  tasks:
+  - ansible.builtin.wait_for_connection:
+      delay: 10
+      timeout: 120
+
+- name: Podstawowa konfiguracja systemu
+  gather_facts: no
+  hosts:
+  - kubernetes
+  tags:
+  - always
+  - base_cluster
+
+  roles:
+  - qemu_agent
+
+- name: Instalacja oprogramowania K8S
+  gather_facts: yes
+  hosts:
+  - kubernetes
+  tags:
+  - always
+  - base_cluster
+  vars_files:
+  - vars.yaml
+
+  roles:
+  - k8s_dependencies
+
+- name: Oczekiwanie na restart
+  gather_facts: no
+  any_errors_fatal: true
+  hosts:
+  - kubernetes
+  tags:
+  - always
+  - base_cluster
+  tasks:
+  - ansible.builtin.wait_for_connection:
+      delay: 10
+      timeout: 120
+
+- name: Instalacja klastra K8S
+  gather_facts: yes
+  hosts:
+  - kubernetes
+  tags:
+  - always
+  - base_cluster
+  vars_files:
+  - vars.yaml
+
+  roles:
+  - k8s_init
+  - k8s_components
+
+- name: Instalacja ingress
+  gather_facts: no
+  hosts:
+  - kubernetes
+  tags:
+  - never
+  vars_files:
+  - vars.yaml
+
+  roles:
+  - k8s_ingress

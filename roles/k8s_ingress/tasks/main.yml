@@ -1,0 +1,89 @@
+---
+# tasks file for k8s_ingress
+
+- ansible.builtin.gather_facts:
+  tags:
+  - ingress_nginx
+  - ingress_traefik
+
+- name: Ingress na Nginx
+  block:
+  - name: Repozytorium Nginx ingress
+    kubernetes.core.helm_repository:
+      name: ingress-nginx
+      repo_url: "https://kubernetes.github.io/ingress-nginx"
+    when: ansible_hostname == main_node
+  - name: Instaluj Nginx ingress
+    kubernetes.core.helm:
+      release_name: ingress-nginx
+      chart_ref: ingress-nginx/ingress-nginx
+      release_namespace: ingress-nginx
+      create_namespace: true
+      set_values:
+      - value: controller.ingressClassResource.name=nginx
+    when: ansible_hostname == main_node
+  tags:
+  - never
+  - ingress_nginx
+
+- name: Ingress na Traefik
+  block:
+  - name: Repozytorium Traefik
+    kubernetes.core.helm_repository:
+      name: traefik
+      repo_url: "https://traefik.github.io/charts"
+    when: ansible_hostname == main_node
+  - name: Instaluj Traefik
+    kubernetes.core.helm:
+      release_name: traefik
+      chart_ref: traefik/traefik
+      release_namespace: traefik
+      create_namespace: true
+      set_values:
+      - value: controller.ingressClassResource.name=traefik
+    when: ansible_hostname == main_node
+  tags:
+  - never
+  - ingress_traefik
+
+
+  #   1  kubectl -n ingress get svc
+  #   2  kubectl create namespace ingress
+  #   3  kubectl get ns
+  #   4  helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+  #   5  helm repo list
+  #   6  helm repo update
+  #   7  helm install ingress-nginx ingress-nginx/ingress-nginx  --namespace ingress --set controller.ingressClassResource.name=nginx
+  #   8  kubectl get service --namespace ingress ingress-nginx-controller --output wide --watch
+  #   9  kubectl get -A pods
+  #  10  kubectl get -A deploy
+  #  11  kubectl get service --namespace ingress ingress-nginx-controller --output wide
+  #  12  helm list -A
+  #  13  helm repo add traefik https://traefik.github.io/charts
+  #  14  helm repo update
+  #  15  kubectl create ns traefik
+  #  16  helm install --namespace=traefik traefik traefik/traefik
+
+
+  # 21   │ kubectl --kubeconfig /tmp/admin.conf get -A svc
+  # 22   │ kubectl --kubeconfig /tmp/admin.conf get -n proba ingress
+  # 23   │ kubectl --kubeconfig /tmp/admin.conf get ingress
+  # 24   │ kubectl --kubeconfig /tmp/admin.conf create -n proba ingress simple1 --rule="foo1.com/=s1:80" --class=traefik
+  # 25   │ kubectl --kubeconfig /tmp/admin.conf get ingressclasses.networking.k8s.io
+  # 26   │ kubectl --kubeconfig /tmp/admin.conf get ic
+  # 27   │ kubectl --kubeconfig /tmp/admin.conf get -n proba ingress simple
+  # 28   │ kubectl --kubeconfig /tmp/admin.conf get -n proba ingress simple -o yaml
+  # 29   │ curl -v http://foo.com/
+  # 30   │ kubectl --kubeconfig /tmp/admin.conf create -n proba ingress simple --rule="foo.com/=s1:80" --class=nginx
+  # 31   │ kubectl --kubeconfig /tmp/admin.conf delete -n proba ingress simple
+  # 32   │ curl -v http://foo.com/aaa
+  # 33   │ kubectl --kubeconfig /tmp/admin.conf create -n proba ingress simple --rule="foo.com/aaa=s1:80"
+  # 34   │ kubectl --kubeconfig /tmp/admin.conf create -n proba ingress simple --rule="foo.com=s1:80"
+  # 35   │ curl -v http://foo.com/aa
+  # 36   │ curl http://foo.com/aa
+  # 37   │ curl http://foo.com/
+  # 38   │ curl http://foo.com
+  # 39   │ kubectl --kubeconfig /tmp/admin.conf create -n proba ingress simple --rule="foo.com/=s1:80"
+  # 40   │ kubectl --kubeconfig /tmp/admin.conf get -n proba svc
+  # 41   │ kubectl --kubeconfig /tmp/admin.conf expose -n proba deployment/nginx --name=s1 --type="ClusterIP" --port 80
+  # 42   │ kubectl --kubeconfig /tmp/admin.conf expose -n proba deployment/nginx s1 --type="ClusterIP" --port 80

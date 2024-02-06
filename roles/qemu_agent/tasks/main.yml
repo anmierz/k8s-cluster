@@ -4,7 +4,3 @@
 - ansible.builtin.ping:
 - ansible.builtin.command: pacman -S --noconfirm qemu-guest-agent
 - ansible.builtin.command: systemctl enable --now qemu-guest-agent.service
-# - ansible.builtin.command: pacman -Ss qemu-guest-agent
-#   register: aaa
-# - ansible.builtin.debug: var=aaa
-# - ansible.builtin.command: pacman -Rs --noconfirm qemu-guest-agent
