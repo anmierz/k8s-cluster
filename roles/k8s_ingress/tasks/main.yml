@@ -1,0 +1,47 @@
+---
+# tasks file for k8s_ingress
+
+- ansible.builtin.gather_facts:
+  tags:
+  - ingress_nginx
+  - ingress_traefik
+
+- name: Ingress na Nginx
+  block:
+  - name: Repozytorium Nginx ingress
+    kubernetes.core.helm_repository:
+      name: ingress-nginx
+      repo_url: "https://kubernetes.github.io/ingress-nginx"
+    when: ansible_hostname == main_node
+  - name: Instaluj Nginx ingress
+    kubernetes.core.helm:
+      release_name: ingress-nginx
+      chart_ref: ingress-nginx/ingress-nginx
+      release_namespace: ingress-nginx
+      create_namespace: true
+      set_values:
+      - value: controller.ingressClassResource.name=nginx
+    when: ansible_hostname == main_node
+  tags:
+  - never
+  - ingress_nginx
+
+- name: Ingress na Traefik
+  block:
+  - name: Repozytorium Traefik
+    kubernetes.core.helm_repository:
+      name: traefik
+      repo_url: "https://traefik.github.io/charts"
+    when: ansible_hostname == main_node
+  - name: Instaluj Traefik
+    kubernetes.core.helm:
+      release_name: traefik
+      chart_ref: traefik/traefik
+      release_namespace: traefik
+      create_namespace: true
+      set_values:
+      - value: controller.ingressClassResource.name=traefik
+    when: ansible_hostname == main_node
+  tags:
+  - never
+  - ingress_traefik

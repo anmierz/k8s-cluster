@@ -1,0 +1,16 @@
+---
+# tasks file for env_prepare
+
+- name: Create temporary directory
+  ansible.builtin.file:
+    path: '{{ tmp_dir }}'
+    state: directory
+    mode: '0755'
+
+# Generowanie MAC adresów
+- ansible.builtin.set_fact:
+    tmp_maszyny: "{{ maszyny }}"
+    maszyny: []
+- ansible.builtin.set_fact:
+    maszyny: "{{ maszyny + [{'name': item.name, 'mac_addr': ('52:54:00' | community.general.random_mac), 'ip_addr': item.ip_addr, 'memory': item.memory}]}}"
+  with_items: "{{ tmp_maszyny }}"

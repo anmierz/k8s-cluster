@@ -1,0 +1,140 @@
+{
+    "additional-repositories": [],
+    "archinstall-language": "English",
+    "bootloader": "Grub",
+    "config_version": "2.7.1",
+    "debug": false,
+    "disk_config": {
+        "config_type": "default_layout",
+        "device_modifications": [
+            {
+                "device": "/dev/vda",
+                "partitions": [
+                    {
+                        "btrfs": [],
+                        "dev_path": null,
+                        "flags": [
+                            "Boot"
+                        ],
+                        "fs_type": "fat32",
+                        "mount_options": [],
+                        "mountpoint": "/boot",
+                        "obj_id": "4af2384c-764d-43ad-a66e-c8889895fbaf",
+                        "size": {
+                            "sector_size": {
+                                "unit": "B",
+                                "value": 512
+                            },
+                            "unit": "MiB",
+                            "value": 203
+                        },
+                        "start": {
+                            "sector_size": {
+                                "unit": "B",
+                                "value": 512
+                            },
+                            "unit": "MiB",
+                            "value": 3
+                        },
+                        "status": "create",
+                        "type": "primary"
+                    },
+                    {
+                        "btrfs": [],
+                        "dev_path": null,
+                        "flags": [],
+                        "fs_type": "ext4",
+                        "mount_options": [],
+                        "mountpoint": "/",
+                        "obj_id": "a73437ef-2127-4ff6-8ae8-fcbe746f4243",
+                        "size": {
+                            "sector_size": {
+                                "unit": "B",
+                                "value": 512
+                            },
+                            "unit": "B",
+                            "value": 21258829824
+                        },
+                        "start": {
+                            "sector_size": {
+                                "unit": "B",
+                                "value": 512
+                            },
+                            "unit": "B",
+                            "value": 216006656
+                        },
+                        "status": "create",
+                        "type": "primary"
+                    }
+                ],
+                "wipe": true
+            }
+        ]
+    },
+    "hostname": "{{ inventory_hostname }}",
+    "kernels": [
+        "linux"
+    ],
+    "locale_config": {
+        "kb_layout": "us",
+        "sys_enc": "UTF-8",
+        "sys_lang": "en_US"
+    },
+{% if mirror_repo.enable %}
+    "mirror_config": {
+        "custom_mirrors": [
+            {
+                "name": "core",
+                "sign_check": "Never",
+                "sign_option": "TrustAll",
+                "url": "{{ mirror_repo.url }}"
+            }
+        ],
+        "mirror_regions": {
+            "Local": [
+                "{{ mirror_repo.url }}",
+                "https://mirror.osbeck.com/archlinux/$repo/os/$arch",
+                "https://europe.mirror.pkgbuild.com/$repo/os/$arch"
+            ]
+        }
+    },
+{% endif %}
+    "network_config": {
+        "nics": [
+            {
+                "dhcp": false,
+                "dns": [
+                    "8.8.8.8"
+                ],
+                "gateway": "{{ ansible_facts.default_ipv4.gateway }}",
+                "iface": "{{ ansible_facts.default_ipv4.interface }}",
+                "ip": "{{ ansible_facts.default_ipv4.address }}/{{ ansible_facts.default_ipv4.prefix }}"
+            }
+        ],
+        "type": "manual"
+    },
+    "no_pkg_lookups": false,
+    "ntp": true,
+    "offline": false,
+    "packages": ["openssh", "python", "python-yaml"],
+    "parallel downloads": 0,
+    "profile_config": {
+        "gfx_driver": null,
+        "greeter": null,
+        "profile": {
+            "custom_settings": {},
+            "details": [],
+            "main": "Minimal"
+        }
+    },
+    "script": "guided",
+    "silent": false,
+    "skip_ntp": false,
+    "skip_version_check": false,
+    "swap": false,
+    "timezone": "Europe/Warsaw",
+    "uki": false,
+    "version": "2.7.1"
+}
+
+

@@ -1,0 +1,11 @@
+- hosts: localhost
+  connection: local
+
+  vars_files:
+  - vars.yaml
+
+  roles:
+  - name: vms_restart
+    vars:
+      cdrom_eject: false
+

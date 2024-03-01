@@ -1,0 +1,3 @@
+---
+# vars file for vms_restart
+cdrom_eject: false

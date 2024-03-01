@@ -1,0 +1,46 @@
+---
+# tasks file for k8s_dependencies
+
+- name: Podmiana iptables -> iptables-nft
+  # --ask 4 to nieudokumentowany parametr potwierdzenia podmiany (usunięcia) pakietu
+  # https://unix.stackexchange.com/questions/274727/how-to-force-pacman-to-answer-yes-to-all-questions/584001#584001
+  ansible.builtin.command: pacman -S --noconfirm iptables-nft --ask 4
+
+# Dla runc idzie od strzała, dla crun trzeba przekonfigurować. Dlatego instalacja runc bo domyślnym pakietem jest crun
+- ansible.builtin.package:
+    name:
+    - runc
+    - cri-o
+
+- ansible.builtin.systemd_service:
+    name: crio.service
+    state: started
+    enabled: true
+
+- ansible.builtin.package:
+    name:
+    - kubeadm
+    - kubelet
+
+- name: Dodatkowo na węźle głównym
+  ansible.builtin.package:
+    name:
+    - kubectl
+    - helm
+  when: ansible_hostname == main_node
+
+- ansible.builtin.systemd_service:
+    name: kubelet.service
+    state: started
+    enabled: true
+
+- ansible.builtin.copy:
+    content: |
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables = 1
+    dest: /etc/sysctl.d/kubernetes.conf
+
+# Nie widzi bridga po reinstalacji iptables-nft i nie aplikuje ustawień zwykłym `sysctl --system`
+- ansible.builtin.command: reboot
+  async: 10
+  poll: 0

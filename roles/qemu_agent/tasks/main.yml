@@ -1,0 +1,6 @@
+---
+# tasks file for qemu_agent
+
+- ansible.builtin.ping:
+- ansible.builtin.command: pacman -S --noconfirm qemu-guest-agent
+- ansible.builtin.command: systemctl enable --now qemu-guest-agent.service

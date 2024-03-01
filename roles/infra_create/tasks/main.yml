@@ -1,0 +1,70 @@
+---
+# tasks file for infra_create
+
+- ansible.builtin.debug:
+    msg: 'Maszyna {{ item.name }}'
+  with_items: "{{ maszyny }}"
+
+- name: Define a new network
+  community.libvirt.virt_net:
+    command: define
+    name: '{{ network_name }}'
+    xml: '{{ lookup("template", "templates/network.xml.j2") }}'
+
+- name: Zatrzymanie sieci przed modyfikacją wpisów DHCP
+  community.libvirt.virt_net:
+    command: destroy
+    name: '{{ network_name }}'
+
+# rezerwacje na DHCP sieci
+- ansible.builtin.shell: 'virsh --connect=qemu:///system net-dumpxml {{ network_name }}'
+  register: 'dhcp_list'
+# - ansible.builtin.debug:
+#     msg: "{{ dhcp_list }}"
+
+- name: Kasowanie kolizyjnych rezerwacji
+  # Brakuje usuwania wpisu DHCP w community.libvirt.virt_net
+  ansible.builtin.shell: "virsh --connect=qemu:///system net-update {{ network_name }} delete ip-dhcp-host '<host name=\"{{ item.name }}\" />'"
+  with_items: "{{ maszyny }}"
+  when: dhcp_list.stdout is regex(" name='%s'" % item.name)
+
+- name: Add a new host in the dhcp pool
+  community.libvirt.virt_net:
+    name: '{{ network_name }}'
+    command: modify
+    xml: "<host mac='{{ item.mac_addr }}' name='{{ item.name }}' ip='{{ item.ip_addr }}'/>"
+  with_items: "{{ maszyny }}"
+
+- community.libvirt.virt_net:
+    command: create
+    name: '{{ network_name }}'
+
+# Dyski
+- ansible.builtin.shell: 'virsh --connect=qemu:///system vol-list default'
+  register: 'disk_list'
+- ansible.builtin.debug:
+    msg: "{{ disk_list }}"
+
+- name: Budowanie XMLi dla dysków
+  ansible.builtin.template:
+    src: templates/volume.xml.j2
+    dest: '{{ tmp_dir }}/vol-{{ item.name }}.xml'
+  with_items: "{{ maszyny }}"
+
+- name: Tworzenie dysku
+  ansible.builtin.shell: 'virsh --connect=qemu:///system vol-create default {{ tmp_dir }}/vol-{{ item.name }}.xml'
+  with_items: "{{ maszyny }}"
+  when: disk_list.stdout is not regex("\n %s" % item.name)
+
+# VMki
+- name: Define a VM
+  community.libvirt.virt:
+    command: define
+    xml: "{{ lookup('template', 'templates/virtual_machine.xml.j2') }}"
+  with_items: "{{ maszyny }}"
+
+- name: Start VMs
+  community.libvirt.virt:
+    command: start
+    name: '{{ item.name }}'
+  with_items: "{{ maszyny }}"
